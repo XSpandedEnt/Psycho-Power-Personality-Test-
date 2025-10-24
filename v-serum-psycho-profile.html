@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>V‑Serum Psycho‑Profile — MVP</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://unpkg.com">
+  <link rel="dns-prefetch" href="https://unpkg.com">
+  <style>html, body { height: 100%; background: #0b1020; }</style>
+</head>
+<body>
+  <div id="root"></div>
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone@7/babel.min.js" crossorigin></script>
+  <script type="text/babel">
+    const { useMemo, useState } = React;
+    const TRAITS = ["Courage","Defiance","Empathy","Compassion","Curiosity","Creativity","Discipline","Serenity","Dominance","Ambition","Cunning","Wisdom","Resilience"];
+    const addMany=(e)=>e.reduce((a,[t,p])=>({...a,[t]:(a[t]||0)+p}),{});
+    const hybridKey=(a,b)=>[a,b].sort().join("+");
+    const MUTATIONS={
+      [hybridKey("Discipline","Wisdom")]:{codename:"Tactical Oracle",power:"Temporal‑Analytic Cognition",desc:"Slows perception through extreme focus; computes optimal outcomes in microtime."},
+      [hybridKey("Courage","Discipline")]:{codename:"Iron Will",power:"Pain‑to‑Power Conversion",desc:"Turns pressure and pain into clean strength; unshakable posture under fire."},
+      [hybridKey("Empathy","Compassion")]:{codename:"Soul Synchronization",power:"Linked healing & shared fortitude",desc:"Binds allies with restorative emotional resonance."},
+      [hybridKey("Curiosity","Wisdom")]:{codename:"Quantum Engineering",power:"Probability‑aware invention",desc:"Designs tools by reading possibility space in real time."},
+      [hybridKey("Creativity","Cunning")]:{codename:"Neural Miragecraft",power:"Reality‑skewing illusions",desc:"Constructs tactile illusions that redirect perception and intent."},
+      [hybridKey("Dominance","Ambition")]:{codename:"Energy Sovereignty",power:"Command & redirection of external power",desc:"Bends incoming force/energy streams to obey the will."},
+      [hybridKey("Resilience","Courage")]:{codename:"Indomitable Core",power:"Adapts harder the tougher the fight",desc:"Every setback hardens form and tactics mid‑battle."},
+      [hybridKey("Discipline","Serenity")]:{codename:"Chrono‑Stasis",power:"Momentary stillness field",desc:"Meditative stillness that freezes a heartbeat of local time."},
+      [hybridKey("Compassion","Courage")]:{codename:"Sentinel Light",power:"Protective kinetic auras",desc:"Shields that inspire morale and block harm."},
+      [hybridKey("Defiance","Courage")]:{codename:"Pyro‑Impulse",power:"Rebellion‑fueled plasma bursts",desc:"Anger channels into blistering controlled combustion."},
+    };
+    const Q=[
+      {id:1,text:"When danger erupts nearby, what drives your first reaction?",
+        options:[["A","Protect everyone you can."],["B","Analyze the situation before moving."],["C","Hit first — hesitation kills."],["D","Distract the threat with creativity or trickery."]],
+        map:{A:addMany([["Empathy",1],["Compassion",1]]),B:addMany([["Wisdom",1],["Discipline",1]]),C:addMany([["Courage",1],["Defiance",1]]),D:addMany([["Creativity",1],["Cunning",1]])}},
+      {id:2,text:"You discover a powerful device that could reshape reality. What do you do?",
+        options:[["A","Study it carefully for safe use."],["B","Use it to help the world."],["C","Hide it until you understand it."],["D","Claim it — you trust yourself more than others."]],
+        map:{A:addMany([["Curiosity",1],["Wisdom",1]]),B:addMany([["Compassion",1],["Ambition",1]]),C:addMany([["Discipline",1],["Curiosity",1]]),D:addMany([["Dominance",1],["Ambition",1]])}},
+      {id:3,text:"A friend betrays you for survival. Your instinct?",
+        options:[["A","Forgive them; fear changes people."],["B","Walk away — lesson learned."],["C","Confront and demand honesty."],["D","Set a trap so they never cross you again."]],
+        map:{A:addMany([["Empathy",1],["Compassion",1]]),B:addMany([["Wisdom",1]]),C:addMany([["Courage",1],["Discipline",1]]),D:addMany([["Cunning",1],["Defiance",1]])},
+        axis:"selfCollective",axisMap:{A:1,B:0,C:0,D:-1}},
+      {id:4,text:"Which environment feels most empowering?",
+        options:[["A","A laboratory buzzing with new data."],["B","A silent temple over a mountain lake."],["C","A war-torn city where your courage matters."],["D","A stage or canvas where imagination rules."]],
+        map:{A:addMany([["Curiosity",1]]),B:addMany([["Serenity",1],["Discipline",1]]),C:addMany([["Courage",1],["Resilience",1]]),D:addMany([["Creativity",1]])}},
+      {id:5,text:"Someone insults your beliefs publicly. You:",
+        options:[["A","Smile and let truth defend itself."],["B","Argue logically and dismantle their claim."],["C","Counterattack until they yield."],["D","Manipulate the crowd subtly to your side."]],
+        map:{A:addMany([["Serenity",1]]),B:addMany([["Wisdom",1],["Discipline",1]]),C:addMany([["Defiance",1],["Dominance",1]]),D:addMany([["Cunning",1],["Creativity",1]])}},
+      {id:6,text:"How do you motivate yourself under pressure?",
+        options:[["A","Discipline and repetition."],["B","Passion and emotion."],["C","Curiosity — there’s always more to learn."],["D","Competition — I must win."]],
+        map:{A:addMany([["Discipline",1]]),B:addMany([["Empathy",1]]),C:addMany([["Curiosity",1]]),D:addMany([["Ambition",1]])}},
+      {id:7,text:"Which flaw do you forgive most easily?",
+        options:[["A","Weakness."],["B","Dishonesty."],["C","Ignorance."],["D","Cowardice."]],
+        map:{A:addMany([["Compassion",1]]),B:addMany([["Cunning",1]]),C:addMany([["Wisdom",1]]),D:addMany([["Courage",1]])}},
+      {id:8,text:"What’s sacred to you?",
+        options:[["A","Truth."],["B","Freedom."],["C","Loyalty."],["D","Creation."]],
+        map:{A:addMany([["Wisdom",1]]),B:addMany([["Defiance",1]]),C:addMany([["Discipline",1],["Compassion",1]]),D:addMany([["Creativity",1]])}},
+      {id:9,text:"You’re offered wealth in exchange for silence about corruption.",
+        options:[["A","Refuse — integrity is priceless."],["B","Accept to survive, then leak the truth later."],["C","Take it — power needs funding."],["D","Trick them; get evidence and the money."]],
+        map:{A:addMany([["Wisdom",1],["Discipline",1]]),B:addMany([["Cunning",1]]),C:addMany([["Ambition",1],["Dominance",1]]),D:addMany([["Cunning",1],["Curiosity",1]])},
+        honesty:{A:1,B:0.4,C:0,D:0.2}},
+      {id:10,text:"During battle, you rely on:",
+        options:[["A","Pure instinct and courage."],["B","Strategy and timing."],["C","Adaptation and improvisation."],["D","Allies and empathy."]],
+        map:{A:addMany([["Courage",1]]),B:addMany([["Discipline",1],["Wisdom",1]]),C:addMany([["Resilience",1],["Creativity",1]]),D:addMany([["Empathy",1]])}},
+      {id:11,text:"Your ideal legacy is:",
+        options:[["A","A better world."],["B","A smarter world."],["C","A freer world."],["D","My name carved in history."]],
+        map:{A:addMany([["Compassion",1]]),B:addMany([["Wisdom",1],["Curiosity",1]]),C:addMany([["Defiance",1]]),D:addMany([["Ambition",1],["Dominance",1]])}},
+      {id:12,text:"The enemy surrenders but begs for mercy.",
+        options:[["A","Spare them — no glory in cruelty."],["B","Question them for information."],["C","Justice requires consequences."],["D","Mercy weakens deterrence — refuse."]],
+        map:{A:addMany([["Compassion",1],["Empathy",1]]),B:addMany([["Wisdom",1]]),C:addMany([["Discipline",1]]),D:addMany([["Dominance",1]])},
+        axis:"selfCollective",axisMap:{A:1,B:0.5,C:0,D:-1}},
+      {id:13,text:"You discover you’ve been lied to by a mentor.",
+        options:[["A","Seek to understand why."],["B","Expose them immediately."],["C","Pretend ignorance until the right time."],["D","Forgive — everyone hides pain somehow."]],
+        map:{A:addMany([["Wisdom",1],["Compassion",1]]),B:addMany([["Courage",1]]),C:addMany([["Cunning",1]]),D:addMany([["Empathy",1]])},
+        honesty:{A:0.9,B:0.8,C:0.2,D:0.6}},
+      {id:14,text:"Your mind at rest feels:",
+        options:[["A","Silent and disciplined."],["B","Overflowing with ideas."],["C","Alert to every signal."],["D","Focused on others’ emotions."]],
+        map:{A:addMany([["Discipline",1],["Serenity",1]]),B:addMany([["Creativity",1]]),C:addMany([["Curiosity",1]]),D:addMany([["Empathy",1]])}},
+      {id:15,text:"Which symbol resonates most?",
+        options:[["A","⚙️ Mechanism of progress."],["B","🔥 Eternal flame."],["C","🌿 Living heartbeat."],["D","🜂 Light breaking through shadow."]],
+        map:{A:addMany([["Curiosity",1],["Discipline",1]]),B:addMany([["Courage",1],["Defiance",1]]),C:addMany([["Empathy",1],["Resilience",1]]),D:addMany([["Wisdom",1],["Compassion",1]])}},
+      {id:16,text:"How do you define honesty?",
+        options:[["A","Speaking truth even when it hurts."],["B","Acting in line with your core values."],["C","Telling what people need to hear."],["D","Whatever maintains harmony or survival."]],
+        map:{A:addMany([["Wisdom",1]]),B:addMany([["Discipline",1]]),C:addMany([["Cunning",1]]),D:addMany([["Serenity",1]])},
+        honesty:{A:1,B:0.8,C:0.2,D:0.4}},
+      {id:17,text:"The law conflicts with morality — what wins?",
+        options:[["A","Morality; conscience before code."],["B","Law; order sustains civilization."],["C","Balance — case by case."],["D","Neither — I decide my own code."]],
+        map:{A:addMany([["Wisdom",1],["Compassion",1]]),B:addMany([["Discipline",1]]),C:addMany([["Curiosity",1]]),D:addMany([["Defiance",1]])},
+        honesty:{A:0.9,B:0.8,C:0.6,D:0.5},
+        axis:"orderChaos",axisMap:{A:0.4,B:1,C:0,D:-1}},
+      {id:18,text:"How do you recover after failure?",
+        options:[["A","Analyze data and rebuild."],["B","Meditate and reset emotions."],["C","Push harder; pain is fuel."],["D","Reinvent myself entirely."]],
+        map:{A:addMany([["Wisdom",1],["Discipline",1]]),B:addMany([["Serenity",1]]),C:addMany([["Courage",1],["Resilience",1]]),D:addMany([["Creativity",1]])}},
+      {id:19,text:"Which resource do you protect most?",
+        options:[["A","Time."],["B","Knowledge."],["C","Trust."],["D","Power."]],
+        map:{A:addMany([["Discipline",1]]),B:addMany([["Wisdom",1],["Curiosity",1]]),C:addMany([["Empathy",1]]),D:addMany([["Dominance",1],["Ambition",1]])}},
+      {id:20,text:"You’re offered to lead a new world. What’s your first decree?",
+        options:[["A","Equality and shared progress."],["B","Truth and transparency in all systems."],["C","Strength decides; only the capable rule."],["D","Creativity becomes law — evolve or fade."]],
+        map:{A:addMany([["Compassion",1]]),B:addMany([["Wisdom",1]]),C:addMany([["Dominance",1],["Ambition",1]]),D:addMany([["Creativity",1]])},
+        axis:"orderChaos",axisMap:{A:0.5,B:0.7,C:0.2,D:-0.5},
+        axis2:"selfCollective",axis2Map:{A:0.7,B:0.5,C:-0.5,D:0}},
+      {id:21,text:"You could erase a painful memory. Do you?",
+        options:[["A","No — pain teaches."],["B","Only if it stops me from doing good."],["C","Yes — efficiency matters."],["D","Maybe later; I want control over when."]],
+        map:{A:addMany([["Resilience",1],["Wisdom",1]]),B:addMany([["Compassion",1]]),C:addMany([["Ambition",1]]),D:addMany([["Dominance",1]])}},
+      {id:22,text:"The universe speaks to you through:",
+        options:[["A","Patterns."],["B","Feelings."],["C","Discipline."],["D","Chaos."]],
+        map:{A:addMany([["Curiosity",1],["Wisdom",1]]),B:addMany([["Empathy",1]]),C:addMany([["Discipline",1]]),D:addMany([["Defiance",1],["Creativity",1]])}},
+      {id:23,text:"What scares you most?",
+        options:[["A","Losing control."],["B","Being forgotten."],["C","Hurting others."],["D","Knowing too much."]],
+        map:{A:addMany([["Discipline",1]]),B:addMany([["Ambition",1]]),C:addMany([["Compassion",1]]),D:addMany([["Curiosity",1]])}},
+      {id:24,text:"How do you handle power you can’t yet control?",
+        options:[["A","Contain it."],["B","Study it."],["C","Wield it anyway — I’ll adapt."],["D","Share it with those I trust."]],
+        map:{A:addMany([["Discipline",1]]),B:addMany([["Curiosity",1]]),C:addMany([["Courage",1],["Resilience",1]]),D:addMany([["Empathy",1]])}},
+      {id:25,text:"Which describes your moral alignment best?",
+        options:[["A","I follow rules I believe in."],["B","I make my own path regardless of rules."],["C","I obey law when it helps others."],["D","I use systems only until I surpass them."]],
+        map:{A:addMany([["Discipline",1],["Wisdom",1]]),B:addMany([["Defiance",1]]),C:addMany([["Compassion",1]]),D:addMany([["Ambition",1],["Dominance",1]])},
+        axis:"orderChaos",axisMap:{A:0.7,B:-0.7,C:0.4,D:-0.2}},
+      {id:26,text:"You sense deception from a loved one.",
+        options:[["A","Confront directly with honesty."],["B","Wait and gather proof."],["C","Pretend ignorance and test them."],["D","Ignore it; love matters more."]],
+        map:{A:addMany([["Courage",1],["Wisdom",1]]),B:addMany([["Discipline",1]]),C:addMany([["Cunning",1]]),D:addMany([["Compassion",1]])},
+        honesty:{A:0.9,B:0.7,C:0.3,D:0.5}},
+      {id:27,text:"When you see injustice:",
+        options:[["A","Speak and act immediately."],["B","Plan quietly for long-term change."],["C","Manipulate the system from inside."],["D","Walk away — survival first."]],
+        map:{A:addMany([["Courage",1]]),B:addMany([["Wisdom",1],["Discipline",1]]),C:addMany([["Cunning",1]]),D:addMany([["Resilience",1]])},
+        axis:"selfCollective",axisMap:{A:1,B:0.7,C:-0.4,D:-0.7}},
+      {id:28,text:"What emotion empowers you most?",
+        options:[["A","Hope."],["B","Anger."],["C","Curiosity."],["D","Love."]],
+        map:{A:addMany([["Wisdom",1]]),B:addMany([["Defiance",1]]),C:addMany([["Curiosity",1]]),D:addMany([["Compassion",1]])}},
+      {id:29,text:"How do you view destiny?",
+        options:[["A","A path to fulfill."],["B","A code to rewrite."],["C","A war to win."],["D","An illusion I can bend."]],
+        map:{A:addMany([["Discipline",1],["Wisdom",1]]),B:addMany([["Curiosity",1]]),C:addMany([["Dominance",1]]),D:addMany([["Creativity",1]])}},
+      {id:30,text:"Choose your oath:",
+        options:[["A","I will heal."],["B","I will build."],["C","I will rise."],["D","I will rule."]],
+        map:{A:addMany([["Compassion",1],["Empathy",1]]),B:addMany([["Creativity",1]]),C:addMany([["Ambition",1]]),D:addMany([["Dominance",1]])}},
+    ];
+
+    function computeScores(answers){
+      const traitScores=Object.fromEntries(TRAITS.map(t=>[t,0]));
+      let honestySum=0, honestyCount=0, orderChaos=0, selfCollective=0;
+      for(const q of Q){
+        const a=answers[q.id]; if(!a) continue;
+        const delta=q.map?.[a]; if(delta) for(const [t,v] of Object.entries(delta)) traitScores[t]=(traitScores[t]||0)+v;
+        if(q.honesty && a in q.honesty){ honestySum+=q.honesty[a]; honestyCount++; }
+        if(q.axis && q.axisMap && a in q.axisMap){
+          if(q.axis==="orderChaos") orderChaos+=q.axisMap[a];
+          if(q.axis==="selfCollective") selfCollective+=q.axisMap[a];
+        }
+        if(q.axis2 && q.axis2Map && a in q.axis2Map){
+          if(q.axis2==="orderChaos") orderChaos+=q.axis2Map[a];
+          if(q.axis2==="selfCollective") selfCollective+=q.axis2Map[a];
+        }
+      }
+      const maxPerTrait=10;
+      const traitPct=Object.fromEntries(Object.entries(traitScores).map(([t,v])=>[t,Math.round((v/maxPerTrait)*100)]));
+      const sorted=Object.entries(traitPct).sort((a,b)=>b[1]-a[1]).map(([t])=>t);
+      const primary=sorted[0], secondary=sorted[1];
+      const hybrid=MUTATIONS[hybridKey(primary,secondary)] ?? {codename:"Undefined Hybrid",power:`${primary} + ${secondary}`,desc:"No defined combo yet; raw synergy manifests in situ."};
+      const honestyIdx=honestyCount?Math.round((honestySum/honestyCount)*100):50;
+      const order=Math.max(-1,Math.min(1,orderChaos));
+      const collective=Math.max(-1,Math.min(1,selfCollective));
+      const alignment=(()=>{const o=order,c=collective;
+        if(o>0.3&&c>0.3)return"Lawful‑Collective (Guardian of Order)";
+        if(o<-0.3&&c>0.3)return"Chaotic‑Collective (Rebel Healer)";
+        if(o>0.3&&c<-0.3)return"Lawful‑Self (Tyrant Visionary)";
+        if(o<-0.3&&c<-0.3)return"Chaotic‑Self (Anarch Adept)";
+        if(c>0.3)return"Neutral‑Collective (Harmonic Sage)";
+        if(c<-0.3)return"Neutral‑Self (Pragmatist)";
+        if(o>0.3)return"Lawful‑Neutral (Architect of Control)";
+        if(o<-0.3)return"Chaotic‑Neutral (Wildcard Inventor)";
+        return"True Neutral (Balancer)";})();
+      const integrity=Math.round(honestyIdx*0.6+(Math.max(order,0)+Math.max(collective,0))*20);
+      const tier=integrity>=90?"Seraphic":integrity>=75?"Vanguard":integrity>=55?"Catalyst":integrity>=35?"Rogue":"Aberrant";
+      return{traitScores,traitPct,primary,secondary,hybrid,honestyIdx,alignment,integrity,tier};
+    }
+
+    const Bar=({pct,label})=>(
+      <div className="mb-3">
+        <div className="flex justify-between text-xs text-slate-400"><span>{label}</span><span>{pct}%</span></div>
+        <div className="h-2 bg-slate-800/60 rounded-full"><div className="h-2 rounded-full bg-indigo-400" style={{width:Math.min(100,Math.max(0,pct))+'%'}}/></div>
+      </div>
+    );
+
+    const Dossier=(r)=>(
+      <div className="w-full max-w-4xl mx-auto grid gap-6 md:grid-cols-2">
+        <div className="p-6 rounded-2xl bg-slate-900/60 ring-1 ring-slate-700/60 shadow-xl">
+          <h2 className="text-2xl font-semibold mb-1">V‑Serum Result</h2>
+          <p className="text-sm text-slate-400 mb-4">Primary expression and integrity summary.</p>
+          <div className="grid grid-cols-2 gap-3 text-sm">
+            <div className="p-3 rounded-lg bg-slate-800/60"><div className="text-slate-400">Primary</div><div className="text-lg font-semibold">{r.primary}</div></div>
+            <div className="p-3 rounded-lg bg-slate-800/60"><div className="text-slate-400">Secondary</div><div className="text-lg font-semibold">{r.secondary}</div></div>
+            <div className="p-3 rounded-lg bg-slate-800/60 col-span-2">
+              <div className="text-slate-400">Hybrid Mutation</div>
+              <div className="font-semibold">{r.hybrid.codename} — <span className="text-indigo-300">{r.hybrid.power}</span></div>
+              <div className="text-slate-400 mt-1">{r.hybrid.desc}</div>
+            </div>
+            <div className="p-3 rounded-lg bg-slate-800/60"><div className="text-slate-400">Honesty Index</div><div className="text-lg font-semibold">{r.honestyIdx}</div></div>
+            <div className="p-3 rounded-lg bg-slate-800/60"><div className="text-slate-400">Integrity Tier</div><div className="text-lg font-semibold">{r.tier} ({r.integrity})</div></div>
+            <div className="p-3 rounded-lg bg-slate-800/60 col-span-2"><div className="text-slate-400">Alignment</div><div className="font-semibold">{r.alignment}</div></div>
+          </div>
+        </div>
+        <div className="p-6 rounded-2xl bg-slate-900/60 ring-1 ring-slate-700/60 shadow-xl">
+          <h3 className="font-semibold mb-2">Trait Spectrum</h3>
+          {TRAITS.map(t=><Bar key={t} pct={r.traitPct[t]||0} label={t}/>)}
+        </div>
+      </div>
+    );
+
+    const App=()=>{
+      const [answers,setAnswers]=useState({});
+      const [showRes,setShowRes]=useState(false);
+      const res=useMemo(()=>computeScores(answers),[answers]);
+      return (
+        <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 text-slate-100 py-10">
+          <div className="max-w-5xl mx-auto px-4">
+            <header className="mb-8">
+              <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">V‑Serum Psycho‑Profile</h1>
+              <p className="text-slate-400 mt-2">Answer all 30 questions to reveal your <span className="text-indigo-300">V‑Signature</span>, hybrid mutation, and alignment.</p>
+            </header>
+            {!showRes && (
+              <div className="space-y-6">
+                {Q.map(q=>(
+                  <div key={q.id} className="p-5 rounded-2xl bg-slate-900/60 ring-1 ring-slate-800">
+                    <div className="flex items-baseline gap-3 mb-3">
+                      <span className="text-indigo-300 font-semibold">{String(q.id).padStart(2,"0")}</span>
+                      <h3 className="text-lg font-semibold">{q.text}</h3>
+                    </div>
+                    <div className="grid md:grid-cols-2 gap-3">
+                      {q.options.map(([key,label])=>{
+                        const selected=answers[q.id]===key;
+                        return (
+                          <button key={key} onClick={()=>setAnswers(a=>({...a,[q.id]:key}))}
+                            className={`text-left p-3 rounded-xl border transition ${selected?"bg-indigo-600/20 border-indigo-400":"bg-slate-800/60 border-slate-700 hover:border-indigo-500/60"}`}>
+                            <span className="text-indigo-300 font-semibold mr-2">{key}.</span>{label}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+                <div className="flex items-center justify-between">
+                  <div className="text-slate-400 text-sm">Answered {Object.keys(answers).length}/30</div>
+                  <button onClick={()=>setShowRes(true)} disabled={Object.keys(answers).length < Q.length}
+                    className="px-5 py-3 rounded-xl bg-indigo-500 disabled:bg-slate-700 disabled:text-slate-400 font-semibold shadow">Reveal Results</button>
+                </div>
+              </div>
+            )}
+            {showRes && (<>
+              <Dossier {...res}/>
+              <div className="mt-8 flex gap-3">
+                <button onClick={()=>setShowRes(false)} className="px-4 py-2 rounded-lg bg-slate-800 ring-1 ring-slate-700">Back to Questions</button>
+                <button onClick={()=>{setAnswers({});setShowRes(false);}} className="px-4 py-2 rounded-lg bg-slate-800 ring-1 ring-slate-700">Reset</button>
+              </div>
+            </>)}
+          </div>
+        </div>
+      );
+    };
+    const root = ReactDOM.createRoot(document.getElementById("root"));
+    root.render(<App/>);
+  </script>
+</body>
+</html>
